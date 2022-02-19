@@ -1,0 +1,29 @@
+"hauntedinvestigation"
+{
+	"base"		"base"
+	"title"		"Haunted Investigation"
+	"maps"		"^hi_"
+	"category"	"pvp"
+	"menusystem"	"1"
+	"workshopid"	"15895"
+
+	"settings"
+	{
+		1
+		{
+			"name"		"sk_maxinvestigators"
+			"text"		"Max investigators"
+			"help"		"The limit of investigators"
+			"type"		"Numeric"
+			"default"	"2"
+		}	
+		2
+		{
+			"name"		"sk_maxghosts"
+			"text"		"Max ghosts"
+			"help"		"The limit of ghosts"
+			"type"		"Numeric"
+			"default"	"3"
+		}
+	}
+}
