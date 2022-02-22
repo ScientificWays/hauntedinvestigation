@@ -15,7 +15,7 @@
 			"text"		"Max investigators"
 			"help"		"The limit of investigators"
 			"type"		"Numeric"
-			"default"	"2"
+			"default"	"4"
 		}	
 		2
 		{
@@ -23,7 +23,79 @@
 			"text"		"Max ghosts"
 			"help"		"The limit of ghosts"
 			"type"		"Numeric"
-			"default"	"3"
+			"default"	"6"
+		}
+		3
+		{
+			"name"		"sk_ghost_area_change_delay"
+			"text"		"Ghost area change delay"
+			"help"		"Ghost area change delay in seconds"
+			"type"		"Numeric"
+			"default"	"300"
+		}
+		4
+		{
+			"name"		"sk_ghost_area_energy_refill_time"
+			"text"		"Ghost area energy refill time"
+			"help"		"Ghost area energy refill time in seconds"
+			"type"		"Numeric"
+			"default"	"30"
+		}
+		5
+		{
+			"name"		"sk_ghost_area_energy_drain_time"
+			"text"		"Ghost area energy drain time"
+			"help"		"Ghost area energy drain time in seconds"
+			"type"		"Numeric"
+			"default"	"180"
+		}
+		6
+		{
+			"name"		"sk_investigator_sprint_duration"
+			"text"		"Investigator sprint duration"
+			"help"		"Investigator sprint duration in seconds"
+			"type"		"Numeric"
+			"default"	"20"
+		}
+		7
+		{
+			"name"		"sk_ghost_attack_start_delay"
+			"text"		"Ghost attack start delay"
+			"help"		"Ghost attack start delay in seconds"
+			"type"		"Numeric"
+			"default"	"8"
+		}
+		8
+		{
+			"name"		"sk_ghost_attack_max_duration"
+			"text"		"Ghost attack max duration"
+			"help"		"Ghost attack max duration in seconds"
+			"type"		"Numeric"
+			"default"	"30"
+		}
+		9
+		{
+			"name"		"sk_ghost_attack_damage"
+			"text"		"Ghost attack damage"
+			"help"		"Ghost attack per second"
+			"type"		"Numeric"
+			"default"	"18"
+		}
+		10
+		{
+			"name"		"sk_ghost_attack_radius"
+			"text"		"Ghost attack radius"
+			"help"		"Ghost attack radius"
+			"type"		"Numeric"
+			"default"	"192"
+		}
+		11
+		{
+			"name"		"sk_ghost_presence_radius"
+			"text"		"Ghost presence radius"
+			"help"		"Ghost presence radius"
+			"type"		"Numeric"
+			"default"	"512"
 		}
 	}
 }

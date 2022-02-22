@@ -30,9 +30,36 @@ function PLAYER:Init()
 
 end
 
+function PLAYER:SetModel()
+	
+	BaseClass.SetModel(self)
+
+	local PlayerSkin = self.Player:GetInfoNum("cl_playerskin", 0)
+
+	self.Player:SetSkin(PlayerSkin)
+
+	local PlayerBodyGroups = self.Player:GetInfo("cl_playerbodygroups") or ""
+
+	local PlayerBodyGroups = string.Explode(" ", PlayerBodyGroups)
+
+	for SampleIndex = 0, self.Player:GetNumBodyGroups() - 1 do
+
+		self.Player:SetBodygroup(SampleIndex, tonumber(PlayerBodyGroups[SampleIndex + 1]) or 0)
+	end
+
+	self.Player:SetMaterial("")
+end
+
 function PLAYER:Spawn()
 
-	
+	self.Player:SetNWBool("bRenderLight", UtilGetCurrentGameState() ~= GAMESTATE_INVESTIGATION)
+
+	self.Player:SetNWFloat("EnergyValue", 1.0)
+
+	if UtilGetCurrentGameState() == GAMESTATE_VEHICLEINTRO then
+
+		PickSeatForInvestigator(self.Player)
+	end
 end
 
 function PLAYER:Loadout()

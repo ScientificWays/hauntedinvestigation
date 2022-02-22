@@ -5,6 +5,7 @@ include("sh_util.lua")
 include("cl_util.lua")
 
 include("cl_hud.lua")
+include("cl_render.lua")
 
 surface.CreateFont("HUDText", {font = "Tahoma",
 									size = 32,

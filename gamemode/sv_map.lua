@@ -1,14 +1,16 @@
 ---- Haunted Investigation
 
-local GhostAreaList = {}
+--GhostAreaList = {}
 
-local IntroRelay = nil
+local IntroRelayName = ""
 local IntroDriverSeatName, IntroPassengerSeatsName = "", ""
 
-local SelectedScenarioIndex = 1
-local ScenarioRelayList = {}
+local InvestigationStartRelayName = ""
 
-function InitMapAreas()
+local SelectedScenarioIndex = 1
+local ScenarioDataList = {}
+
+--[[function InitMapAreas()
 
 	MsgN("InitMapAreas()")
 
@@ -23,27 +25,32 @@ function InitMapAreas()
 			table.insert(GhostAreaList, SampleArea)
 		end
 	end
-end
+end--]]
 
 function RegisterIntroData(InIntroRelayName, InIntroDriverSeatName, InIntroPassengerSeatsName)
 
-	IntroRelay = ents.FindByName(InIntroRelayName)[1]
+	IntroRelayName = InIntroRelayName
 
 	IntroDriverSeatName, IntroPassengerSeatsName = InIntroDriverSeatName, InIntroPassengerSeatsName
 end
 
-function RegisterScenarioRelay(InScenarioRelayName, InScenarioIndex)
+function RegisterScenarioData(InScenarioIndex, InScenarioRelayName, InScenarioGhostAreasName)
 
-	local SampleScenarioRelay = ents.FindByName(InScenarioRelayName)[1]
+	MsgN(Format("RegisterScenarioData() %i", InScenarioIndex))
 
-	ScenarioRelayList[InScenarioIndex] = SampleScenarioRelay
+	ScenarioDataList[InScenarioIndex] = {RelayName = InScenarioRelayName, GhostAreasName = InScenarioGhostAreasName}
+end
+
+function RegisterInvestigationStartRelay(InInvestigationStartRelayName)
+
+	InvestigationStartRelayName = InInvestigationStartRelayName
 end
 
 function TrySetScenario(InScenarioIndex)
 
 	MsgN(Format("TrySetScenario() %s", InScenarioIndex))
 
-	if ScenarioRelayList[InScenarioIndex] ~= nil then
+	if ScenarioDataList[InScenarioIndex] ~= nil then
 
 		SelectedScenarioIndex = InScenarioIndex
 
@@ -53,6 +60,8 @@ end
 
 function StartGame(bSkipIntro)
 
+	UtilSendChatMessageToPlayers({"HI_Event.StartGame", SelectedScenarioIndex})
+
 	local AllPlayers = player.GetAll()
 
 	for Index, SamplePlayer in ipairs(AllPlayers) do
@@ -60,16 +69,78 @@ function StartGame(bSkipIntro)
 		SamplePlayer:Spawn()
 	end
 
-	ScenarioRelayList[SelectedScenarioIndex]:Input("Trigger")
+	MsgN(table.ToString(ScenarioDataList))
+
+	local ScenarioRelay = ents.FindByName(ScenarioDataList[SelectedScenarioIndex].RelayName)[1]
+
+	local ScenarioGhostAreaList = ents.FindByName(ScenarioDataList[SelectedScenarioIndex].GhostAreasName)
+
+	SetGhostAreaList(ScenarioGhostAreaList)
+
+	ScenarioRelay:Input("Trigger")
 
 	if bSkipIntro then
 
 		OnInvestigationStarted()
 	else
-		IntroRelay:Input("Trigger")
 
-		StartVehicleIntro(IntroDriverSeatName, IntroPassengerSeatsName)
+		OnIntroStarted()
 	end
 
-	UtilSendChatMessageToPlayers({"HI_Event.StartGame", SelectedScenarioIndex})
+	StartUpdateGhostAreas()
+
+	EnableGhostSpecialSounds()
+end
+
+function OnIntroStarted()
+
+	IntroRelay = ents.FindByName(IntroRelayName)[1]
+
+	IntroRelay:Input("Trigger")
+
+	StartVehicleIntro(IntroDriverSeatName, IntroPassengerSeatsName)
+end
+
+function OnInvestigationStarted()
+
+	TryEndVehicleIntro()
+
+	SetGlobalInt("CurrentGameState", GAMESTATE_INVESTIGATION)
+
+	local InvestigationStartRelay = ents.FindByName(InvestigationStartRelayName)[1]
+
+	InvestigationStartRelay:Input("Trigger")
+
+	local AllInvestigators = team.GetPlayers(TEAM_INVESTIGATOR)
+
+	for Index, SampleInvestigator in ipairs(AllInvestigators) do
+
+		--SampleInvestigator:SetNWBool("bRenderLight", false)
+
+		if not SampleInvestigator:Alive() or not SampleInvestigator:InVehicle() then
+
+			SampleInvestigator:Spawn()
+		end
+	end
+
+	local AllGhosts = team.GetPlayers(TEAM_GHOST)
+
+	for Index, SampleGhost in ipairs(AllGhosts) do
+
+		--SampleGhost:SetNWBool("bRenderLight", true)
+
+		if not SampleGhost:Alive() or not SampleGhost:InVehicle() then
+
+			SampleGhost:Spawn()
+		end
+	end
+end
+
+function EndGame()
+
+	UtilSendChatMessageToPlayers({"HI_Event.EndGame"})
+
+	StopUpdateGhostAreas()
+
+	DisableGhostSpecialSounds()
 end

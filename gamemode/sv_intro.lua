@@ -1,18 +1,18 @@
 ---- Haunted Investigation
 
-IntroDriverSeat = nil
+local IntroDriverSeat = nil
 
-IntroPassengerSeats = {}
+local IntroPassengerSeats = {}
 
-local function PickSeatForInvestigator(InInvestigator)
+function PickSeatForInvestigator(InInvestigatorPlayer)
 
-	--MsgN(Format("PickSeatForInvestigator() %s", InInvestigator))
+	--MsgN(Format("PickSeatForInvestigator() %s", InInvestigatorPlayer))
 
 	if not IsValid(IntroDriverSeat:GetDriver()) then
 
-		InInvestigator:EnterVehicle(IntroDriverSeat)
+		InInvestigatorPlayer:EnterVehicle(IntroDriverSeat)
 
-		MsgN(Format("%s enter vehicle %s", InInvestigator, IntroDriverSeat))
+		MsgN(Format("%s enter vehicle %s", InInvestigatorPlayer, IntroDriverSeat))
 	else
 		local FreePassengerSeats = {}
 
@@ -28,13 +28,11 @@ local function PickSeatForInvestigator(InInvestigator)
 
 		if not table.IsEmpty(FreePassengerSeats) then
 
-			local SampleIndex = math.Random(#FreePassengerSeats)
+			local SampleFreeSeat = table.Random(FreePassengerSeats)
 
-			InInvestigator:EnterVehicle(FreePassengerSeats[SampleIndex])
+			InInvestigatorPlayer:EnterVehicle(SampleFreeSeat)
 
-			MsgN(Format("%s enter vehicle %s", InInvestigator, FreePassengerSeats[SampleIndex]))
-
-			table.remove(FreePassengerSeats, SampleIndex)
+			MsgN(Format("%s enter vehicle %s", InInvestigatorPlayer, SampleFreeSeat))
 		end
 	end
 end
@@ -74,42 +72,16 @@ function StartVehicleIntro(InDriverSeatName, InPassengerSeatsName)
 
 	for Index, SampleGhost in ipairs(AllGhosts) do
 
+		SampleGhost:Spectate(OBS_MODE_CHASE)
+		
 		SampleGhost:SpectateEntity(table.Random(AllInvestigators))
 	end
 end
 
-function EndVehicleIntro()
+function TryEndVehicleIntro()
 
-	OnInvestigationStarted()
-end
+	if UtilGetCurrentGameState() ~= GAMESTATE_VEHICLEINTRO then
 
-function OnInvestigationStarted()
-
-	SetGlobalInt("CurrentGameState", GAMESTATE_INVESTIGATION)
-
-	local AllPlayers = player.GetAll()
-
-	for Index, SamplePlayer in ipairs(AllPlayers) do
-
-		if not SamplePlayer:IsAlive() or not SamplePlayer:InVehicle() then
-
-			SamplePlayer:Spawn()
-		end
-	end
-end
-
-function OnPlayerSpawnDuringVehicleIntro(InPlayer)
-
-	--MsgN(Format("OnPlayerSpawnDuringVehicleIntro() %s", InPlayer))
-
-	if InPlayer:Team() == TEAM_INVESTIGATOR then
-
-		PickSeatForInvestigator(InPlayer)
-
-	elseif InPlayer:Team() == TEAM_GHOST then
-
-		local AllInvestigators = team.GetPlayers(TEAM_INVESTIGATOR)
-
-		SampleGhost:SpectateEntity(table.Random(AllInvestigators))
+		return
 	end
 end

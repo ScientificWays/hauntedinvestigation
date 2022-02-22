@@ -5,21 +5,21 @@ function GM:OnPlayerChangedTeam(InPlayer, InOldTeam, InNewTeam)
 	InPlayer:Spawn()
 end
 
-function GM:PlayerDeathThink(InPlayer)
+--[[function GM:PlayerDeathThink(InPlayer)
 
-end
+end--]]
 
-function GM:PlayerSelectTeamSpawn(TeamID, InPlayer)
+function GM:PlayerSelectSpawn(InPlayer, bTransition)
 
-	MsgN(Format("PlayerSelectTeamSpawn() %s", InPlayer))
+	MsgN(Format("PlayerSelectSpawn() %s", InPlayer))
 
 	local SpawnPointList = {}
 
 	if UtilGetCurrentGameState() == GAMESTATE_INVESTIGATION then
 
-		if TeamID == TEAM_INVESTIGATOR then
+		if InPlayer:Team() == TEAM_INVESTIGATOR then
 
-			SpawnPointList = team.GetSpawnPoints(TeamID)
+			SpawnPointList = team.GetSpawnPoints(TEAM_INVESTIGATOR) or {}
 
 		else
 			SpawnPointList = team.GetPlayers(TEAM_INVESTIGATOR)
@@ -28,15 +28,28 @@ function GM:PlayerSelectTeamSpawn(TeamID, InPlayer)
 
 	if table.IsEmpty(SpawnPointList) then
 
-		return
+		local DefaultPlayerStarts = ents.FindByClass("info_player_start")
+
+		return table.Random(DefaultPlayerStarts)
 	end
 
 	local OutSpawnPoint = table.Random(SpawnPointList)
 
+	MsgN("OutSpawnPoint:", OutSpawnPoint)
+
 	return OutSpawnPoint
 end
 
-function GM:PlayerSpawn(InPlayer, InTransiton)
+function GM:PlayerInitialSpawn(InPlayer, bTransition)
+
+	InPlayer:SetCustomCollisionCheck(true)
+
+	InPlayer:SetTeam(TEAM_UNASSIGNED)
+
+	InPlayer:ConCommand("gm_showteam")
+end
+
+function GM:PlayerSpawn(InPlayer, bTransiton)
 
 	MsgN(Format("PlayerSpawn() %s", InPlayer))
 
@@ -45,17 +58,19 @@ function GM:PlayerSpawn(InPlayer, InTransiton)
 	or UtilGetCurrentGameState() == GAMESTATE_PREGAME
 	or UtilGetCurrentGameState() == GAMESTATE_POSTGAME then
 
-		self:PlayerSpawnAsSpectator(InPlayer)
+		InPlayer:SetNWBool("bSpectator", true)
 
-		InPlayer:SetNWBool("bRenderLight", true)
+		self:PlayerSpawnAsSpectator(InPlayer)
 	else
+		InPlayer:SetNWBool("bSpectator", false)
+
 		player_manager.SetPlayerClass(InPlayer, table.Random(team.GetClass(InPlayer:Team())))
 
 		InPlayer:UnSpectate()
 
 		InPlayer:SetupHands()
 
-		player_manager.OnPlayerSpawn(InPlayer, InTransiton)
+		player_manager.OnPlayerSpawn(InPlayer, bTransiton)
 
 		player_manager.RunClass(InPlayer, "Spawn")
 
@@ -63,12 +78,22 @@ function GM:PlayerSpawn(InPlayer, InTransiton)
 
 		hook.Run("PlayerSetModel", InPlayer)
 
-		if UtilGetCurrentGameState() == GAMESTATE_VEHICLEINTRO then
+		InPlayer:ConCommand("pp_colormod 1")
 
-			OnPlayerSpawnDuringVehicleIntro(InPlayer)
-		end
+		InPlayer:ConCommand("pp_colormod_addr 0")
+		InPlayer:ConCommand("pp_colormod_addg 0")
+		InPlayer:ConCommand("pp_colormod_addb 0")
+		InPlayer:ConCommand("pp_colormod_contrast 1")
+		InPlayer:ConCommand("pp_colormod_mulr 0")
+		InPlayer:ConCommand("pp_colormod_mulg 0")
+		InPlayer:ConCommand("pp_colormod_mulb 0")
+		InPlayer:ConCommand("pp_colormod_brightness 0.0")
 
-		InPlayer:SetNWBool("bRenderLight", InPlayer:Team() == TEAM_GHOST)
+		InPlayer:ConCommand("pp_motionblur 1")
+
+		InPlayer:ConCommand("pp_motionblur_addalpha 1.0")
+		InPlayer:ConCommand("pp_motionblur_drawalpha 1.0")
+		InPlayer:ConCommand("pp_motionblur_delay 0.0")
 	end
 end
 
@@ -88,7 +113,22 @@ function GM:PlayerSpawnAsSpectator(InPlayer)
 	end
 end
 
+function GM:CanPlayerEnterVehicle(InVehicle, InPlayer, InSeatIndex)
+
+	return UtilGetCurrentGameState() == GAMESTATE_VEHICLEINTRO and InPlayer:Team() == TEAM_INVESTIGATOR
+end
+
 function GM:CanExitVehicle(InVehicle, InPlayer)
 
 	return UtilGetCurrentGameState() ~= GAMESTATE_VEHICLEINTRO
+end
+
+function GM:PlayerShouldTakeDamage(InPlayer, InEntity)
+
+	if InPlayer:Team() == TEAM_GHOST then
+
+		return false
+	end
+
+	return true
 end

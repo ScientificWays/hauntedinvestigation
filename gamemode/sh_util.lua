@@ -34,13 +34,45 @@ function GM:CreateTeams()
 
 	TEAM_INVESTIGATOR = 1
 	team.SetUp(TEAM_INVESTIGATOR, "HI_Team.Investigators", Color(0, 150, 255))
-	team.SetSpawnPoint(TEAM_GUARD, {"info_investigator_respawn"})
+	team.SetSpawnPoint(TEAM_INVESTIGATOR, {"info_investigator_respawn"})
 	team.SetClass(TEAM_INVESTIGATOR, {"player_investigator"})
 
 	TEAM_GHOST = 2
 	team.SetUp(TEAM_GHOST, "HI_Team.Ghosts", Color(255, 150, 0))
 	team.SetClass(TEAM_GHOST, {"player_ghost"})
 
-	team.SetUp(TEAM_SPECTATOR, "HI_Role.Spectators", Color(255, 255, 255))
+	team.SetUp(TEAM_SPECTATOR, "HI_Team.Spectators", Color(255, 255, 255))
 	team.SetSpawnPoint(TEAM_SPECTATOR, {"worldspawn"})
+end
+
+function GM:PlayerFootstep(InPlayer, InPos, InFootIndex, InSoundName, InVolume, InRecipientFilter)
+
+	if not InPlayer:Alive() or InPlayer:Team() == TEAM_GHOST then
+
+		return true
+	end
+
+	return false
+end
+
+function GM:ShouldCollide(InEntity1, InEntity2)
+
+	--MsgN(InEntity1, InEntity2)
+
+	if InEntity1:IsPlayer() and InEntity2:IsPlayer() then
+
+		return false
+	end
+
+	--[[if InEntity2:IsPlayer() then
+
+		InEntity1, InEntity2 = InEntity2, InEntity1
+	end--]]
+
+	if InEntity1:GetNWFloat("SpectralValue") > 0.0 and string.StartWith(InEntity2:GetClass(), "prop_") then
+
+		return false
+	end
+
+	return true
 end
