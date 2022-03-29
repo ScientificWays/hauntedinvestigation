@@ -113,7 +113,7 @@ function GM:PlayerSpawnAsSpectator(InPlayer)
 	end
 end
 
-function GM:CanPlayerEnterVehicle(InVehicle, InPlayer, InSeatIndex)
+function GM:CanPlayerEnterVehicle(InPlayer, InVehicle, InSeatIndex)
 
 	return UtilGetCurrentGameState() == GAMESTATE_VEHICLEINTRO and InPlayer:Team() == TEAM_INVESTIGATOR
 end
@@ -123,12 +123,19 @@ function GM:CanExitVehicle(InVehicle, InPlayer)
 	return UtilGetCurrentGameState() ~= GAMESTATE_VEHICLEINTRO
 end
 
-function GM:PlayerShouldTakeDamage(InPlayer, InEntity)
+function GM:EntityTakeDamage(InTarget, InDamageInfo)
 
-	if InPlayer:Team() == TEAM_GHOST then
+	if InTarget:IsPlayer() and InTarget:Team() == TEAM_GHOST then
 
-		return false
+		InTarget.DamageSlowEndTime = math.max(InTarget.DamageSlowEndTime, 0.05 * InDamageInfo:GetDamage())
+
+		return true
 	end
 
-	return true
+	return false
+end
+
+function GM:PlayerNoClip(InPlayer, bDesiredNoClipState)
+	
+	return GetConVar("sv_cheats"):GetInt() > 0 and InPlayer:Alive()
 end

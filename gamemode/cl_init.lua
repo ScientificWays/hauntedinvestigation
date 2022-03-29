@@ -1,11 +1,13 @@
 ---- Haunted Investigation
 
 include("sh_util.lua")
+include("sh_spectator.lua")
 
 include("cl_util.lua")
 
 include("cl_hud.lua")
 include("cl_render.lua")
+include("cl_spectator.lua")
 
 surface.CreateFont("HUDText", {font = "Tahoma",
 									size = 32,
@@ -17,6 +19,11 @@ surface.CreateFont("HUDTextSmall", {font = "Tahoma",
 function GM:Initialize()
 
 	MsgN("Client Initialize()")
+
+	net.Receive("ClientOpenSoundInterface", function(InMessageLength, InPlayer)
+
+		ShowSoundInterface()
+	end)
 
 	net.Receive("SendChatMessageToClients", UtilClientReceiveChatMessage)
 	

@@ -68,6 +68,7 @@ function PLAYER:Loadout()
  
 	self.Player:Give("weapon_hi_unarmed")
 	self.Player:Give("weapon_hi_fists")
+	self.Player:Give("weapon_hi_talkie")
 end
  
 player_manager.RegisterClass("player_investigator", PLAYER, "player_default")

@@ -4,7 +4,9 @@ local GhostAttackSoundList = {
 	"hauntedinvestigation/ghostattack001a.wav",
 	"hauntedinvestigation/ghostattack002a.wav",
 	"hauntedinvestigation/ghostattack003a.wav",
-	"hauntedinvestigation/ghostattack004a.wav"
+	"hauntedinvestigation/ghostattack004a.wav",
+	"ambient/levels/citadel/zapper_warmup1.wav",
+	"ambient/levels/citadel/zapper_warmup4.wav"
 }
 
 local GhostNearbySoundList = {

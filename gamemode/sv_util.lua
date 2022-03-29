@@ -55,6 +55,16 @@ function UtilGetGhostPresenceRadius()
 	return GetConVar("sk_ghost_presence_radius"):GetFloat()
 end
 
+function UtilGetSpectatorSoundCooldown()
+
+	return GetConVar("sk_spectator_sound_cooldown"):GetFloat()
+end
+
+function UtilGetGhostSabotageCooldown()
+
+	return GetConVar("sk_ghost_sabotage_cooldown"):GetFloat()
+end
+
 function UtilSendChatMessageToPlayers(InMessageStrings)
 
 	net.Start("SendChatMessageToClients")
@@ -93,4 +103,33 @@ function UtilCheckPlayerInArea(InPlayer, InArea)
 	end
 
 	return false
+end
+
+function UtilGetNearestEntity(InEntityList, InCheckPos, InMaxDistance)
+
+	local OutEntity = nil
+
+	local FilteredDistanceSquared = InMaxDistance * InMaxDistance
+
+	MsgN(table.ToString(InEntityList))
+
+	for SampleIndex, SampleEntity in ipairs(InEntityList) do
+
+		--MsgN(SampleEntity:GetPos())
+
+		local SampleDistanceSquared = InCheckPos:DistToSqr(SampleEntity:GetPos())
+
+		--MsgN(SampleDistanceSquared)
+
+		if SampleDistanceSquared < FilteredDistanceSquared then
+
+			OutEntity = SampleEntity
+
+			FilteredDistanceSquared = SampleDistanceSquared
+		end
+	end
+
+	MsgN(OutEntity)
+
+	return OutEntity
 end

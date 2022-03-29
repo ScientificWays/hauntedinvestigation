@@ -1,0 +1,19 @@
+"UnlitGeneric"
+{
+	"$basetexture" "sprites/light_glow02"
+	"$additive" "1"
+	"$translucent" "1"
+	"$vertexcolor" "1"
+
+	Proxies
+	{
+		GaussianNoise
+		{
+			mean			0.01
+			halfWidth		0.05
+			minVal		0
+			maxVal		1
+			resultVar		$alpha
+		}
+	}
+}

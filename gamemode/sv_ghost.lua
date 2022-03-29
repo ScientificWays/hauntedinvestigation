@@ -13,6 +13,8 @@ hook.Add("KeyPress", "GhostTeleport", function(InPlayer, InKey)
 			local SampleTeleportPlayer = table.Random(AllInvestigators)
 
 			InPlayer:SetPos(SampleTeleportPlayer:GetPos())
+
+			InPlayer:SetNWFloat("EnergyValue", InPlayer:GetNWFloat("EnergyValue") * 0.5)
 		end
 	end
 end)
@@ -27,6 +29,10 @@ hook.Add("SetupMove", "GhostMove", function(InPlayer, InMoveData, InUserCmd)
 
 			InMoveData:SetVelocity(Vector(OldVelocity.x, OldVelocity.y, 280))
 		end
+
+	elseif (InPlayer.DamageSlowEndTime or 0.0) > CurTime() then
+
+		InMoveData:SetMaxClientSpeed(100)
 	else
 		InMoveData:SetMaxClientSpeed(200)
 	end
@@ -89,17 +95,21 @@ local function UpdateGhostAreas()
 	timer.Create("GhostAreaChangeTimer", UtilGetGhostAreaChangeDelay(), 1, UpdateGhostAreas)
 end
 
-function StartUpdateGhostAreas()
+function StartGhostLogic()
+
+	timer.Create("GhostPresenceOrAttackTickTimer", 1.0, 0, GhostPresenceOrAttackTick)
 
 	UpdateGhostAreas()
 end
 
-function StopUpdateGhostAreas()
+function StopGhostLogic()
+
+	timer.Remove("GhostPresenceOrAttackTickTimer")
 
 	timer.Remove("GhostAreaChangeTimer")
 end
 
-timer.Create("GhostPresenceOrAttackTick", 1.0, 0, function()
+function GhostPresenceOrAttackTick()
 
 	local AllGhosts = team.GetPlayers(TEAM_GHOST)
 
@@ -117,6 +127,7 @@ timer.Create("GhostPresenceOrAttackTick", 1.0, 0, function()
 
 				InvestigatorPresenceTick(InvestigatorPlayer, GhostPlayer, math.DistanceSqr(GhostPos.x, GhostPos.y, InvestigatorPos.x, InvestigatorPos.y) < math.pow(UtilGetGhostPresenceRadius(), 2))
 			end
+
 			if GhostPlayer:GetNWBool("bAttacking") then
 
 				InvestigatorAttackedTick(InvestigatorPlayer, GhostPlayer, GhostPos:DistToSqr(InvestigatorPos) < math.pow(UtilGetGhostAttackRadius(), 2))
@@ -126,9 +137,20 @@ timer.Create("GhostPresenceOrAttackTick", 1.0, 0, function()
 		if not GhostPlayer:GetNWBool("bAttacking") then
 
 			TryStopGhostAttackLoopSound(GhostPlayer)
+
+			if GhostPlayer:GetNWFloat("GhostBloomTime") > 0.0 then
+
+				GhostPlayer:SetNWFloat("GhostBloomTime", GhostPlayer:GetNWFloat("GhostBloomTime") - 1.0)
+
+			elseif math.random() < 0.04 then
+
+				GhostPlayer:SetNWFloat("GhostBloomTime", 5.0)
+
+				MsgN(Format("%s is now with ghost bloom for 5 seconds!", GhostPlayer))
+			end
 		end
 	end
-end)
+end
 
 function InvestigatorPresenceTick(InInvestigator, InGhost, bPresence)
 
@@ -143,15 +165,18 @@ function InvestigatorAttackedTick(InInvestigator, InGhost, bNewState)
 
 	InInvestigator:SetNWBool("bAttackedByGhost", bNewState)
 
-	--[[if bOldState == false and bNewState == true then
+	if bOldState == false and bNewState == true then
 
+		timer.Simple(math.Rand(1.0, 3.0), InInvestigator:SteamID(), function()
 
+			RandomizeTalkieFrequency(InInvestigator)
+		end)
 
 	elseif bOldState == false and bNewState == true then
 
 
 
-	end--]]
+	end
 
 	if bNewState then
 
@@ -172,3 +197,29 @@ function InvestigatorAttackedTick(InInvestigator, InGhost, bNewState)
 		TryStopGhostAttackLoopSound(InGhost)
 	end
 end
+
+function GM:PlayerHurt(InVictimPlayer, InAttackerEntity, InHealthRemaining, InDamageTaken)
+
+	UpdatePlayersHealthValue()
+
+	if InVictimPlayer:Team() == TEAM_GHOST and InAttackerEntity:IsPlayer() then
+
+		InVictimPlayer:SetNWFloat("DamageSlowTime", 2.0)
+	end
+end
+
+timer.Create("DamageSlowUpdate", 0.5, 0, function()
+
+	local AllPlayers = player.GetAll()
+
+	for Index, SamplePlayer in ipairs(AllPlayers) do
+
+		if SamplePlayer:GetNWFloat("DamageSlowTime") > 0.5 then
+
+			SamplePlayer:SetNWFloat("DamageSlowTime", SamplePlayer:GetNWFloat("DamageSlowTime") - 0.5)
+
+		else
+			SamplePlayer:SetNWFloat("DamageSlowTime", 0.0)
+		end
+	end
+end)

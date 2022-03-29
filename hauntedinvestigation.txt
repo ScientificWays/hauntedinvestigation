@@ -97,5 +97,21 @@
 			"type"		"Numeric"
 			"default"	"512"
 		}
+		12
+		{
+			"name"		"sk_spectator_sound_cooldown"
+			"text"		"Spectator sound cooldown"
+			"help"		"Spectator sound cooldown"
+			"type"		"Numeric"
+			"default"	"30"
+		}
+		13
+		{
+			"name"		"sk_ghost_sabotage_cooldown"
+			"text"		"Ghost sabotage cooldown"
+			"help"		"Ghost sabotage cooldown"
+			"type"		"Numeric"
+			"default"	"60"
+		}
 	}
 }

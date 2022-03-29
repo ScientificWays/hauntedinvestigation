@@ -51,6 +51,8 @@ function PLAYER:SetModel()
 	self.Player:SetModel(ModelName)
 
 	self.Player:SetMaterial("!GhostMaterial")
+
+	self.Player:DrawShadow(false)
 end
 
 function PLAYER:Spawn()

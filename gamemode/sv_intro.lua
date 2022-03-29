@@ -37,9 +37,13 @@ function PickSeatForInvestigator(InInvestigatorPlayer)
 	end
 end
 
-function StartVehicleIntro(InDriverSeatName, InPassengerSeatsName)
+function OnIntroStarted(InIntroData)
 
 	SetGlobalInt("CurrentGameState", GAMESTATE_VEHICLEINTRO)
+
+	local IntroRelay = ents.FindByName(InIntroData.RelayName)[1]
+
+	IntroRelay:Input("Trigger")
 
 	local AllEntites = ents.GetAll()
 
@@ -47,11 +51,11 @@ function StartVehicleIntro(InDriverSeatName, InPassengerSeatsName)
 
 		local SampleEntityName = SampleEntity:GetName()
 
-		if SampleEntityName == InDriverSeatName and SampleEntity:IsVehicle() then
+		if SampleEntityName == InIntroData.DriverSeatName and SampleEntity:IsVehicle() then
 
 			IntroDriverSeat = SampleEntity
 
-		elseif SampleEntityName == InPassengerSeatsName and SampleEntity:IsVehicle() then
+		elseif SampleEntityName == InIntroData.PassengerSeatName and SampleEntity:IsVehicle() then
 
 			table.insert(IntroPassengerSeats, SampleEntity)
 		end
@@ -75,13 +79,5 @@ function StartVehicleIntro(InDriverSeatName, InPassengerSeatsName)
 		SampleGhost:Spectate(OBS_MODE_CHASE)
 		
 		SampleGhost:SpectateEntity(table.Random(AllInvestigators))
-	end
-end
-
-function TryEndVehicleIntro()
-
-	if UtilGetCurrentGameState() ~= GAMESTATE_VEHICLEINTRO then
-
-		return
 	end
 end

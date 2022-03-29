@@ -24,8 +24,12 @@ end)
 function GM:PlayerCanHearPlayersVoice(InListener, InTalker)
 
 	--MsgN(InListener, table.ToString(InListener.VoiceFilteredPlayers))
+	
+	if UtilCanHearByTalkie(InListener, InTalker) then
 
-	if InListener.VoiceFilteredPlayers and InListener.VoiceFilteredPlayers[InTalker:UserID()] then
+		return true, false
+
+	elseif InListener.VoiceFilteredPlayers and InListener.VoiceFilteredPlayers[InTalker:UserID()] then
 
 		--MsgN("Test")
 

@@ -129,6 +129,31 @@ hook.Add("PostDrawTranslucentRenderables", "GhostAreaDraw", function()
 	end
 end)
 
+local SabotageIconMaterial = Material("icon16/drive_error.png", "ignorez")
+
+hook.Add("PostDrawTranslucentRenderables", "SabotageIconDraw", function()
+
+	local Client = LocalPlayer()
+
+	if Client:Team() == TEAM_GHOST then
+
+		local SabotagePos = Client:GetNWVector("SabotageRelayPos")
+
+		--MsgN(SabotagePos)
+
+		if not SabotagePos:IsZero() then
+
+			render.SetMaterial(SabotageIconMaterial)
+
+			render.DrawSprite(SabotagePos, 16.0, 16.0, COLOR_WHITE)
+		end
+	end
+end)
+
+local GhostBloomMaterial = Material("hauntedinvestigation/ghostbloom")
+
+local GhostBloomColor	= Color(50, 50, 50)
+
 function GM:PrePlayerDraw(InPlayer, InFlags)
 
 	local Client = LocalPlayer()
@@ -136,6 +161,13 @@ function GM:PrePlayerDraw(InPlayer, InFlags)
 	if Client:Team() == TEAM_INVESTIGATOR and InPlayer:Team() == TEAM_GHOST then
 
 		if InPlayer:GetNWFloat("SpectralValue") > 0.0 then
+
+			if InPlayer:GetNWFloat("GhostBloomTime") > 0.0 then
+
+				render.SetMaterial(GhostBloomMaterial)
+
+				render.DrawSprite(InPlayer:GetPos() + Vector(0.0, 0.0, 48.0), 256.0, 256.0, GhostBloomColor)
+			end
 
 			return true
 		end

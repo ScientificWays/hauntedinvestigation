@@ -30,15 +30,22 @@ function UtilGetCurrentGameState()
 	return GetGlobalInt("CurrentGameState")
 end
 
+function UtilCanHearByTalkie(InListener, InTalker)
+
+	return InListener:HasWeapon("weapon_hi_talkie")
+	and IsValid(InTalker:GetActiveWeapon()) and InTalker:GetActiveWeapon():GetClass() == "weapon_hi_talkie"
+	and InListener:GetNWFloat("TalkieFrequency") == InTalker:GetNWFloat("TalkieFrequency")
+end
+
 function GM:CreateTeams()
 
 	TEAM_INVESTIGATOR = 1
-	team.SetUp(TEAM_INVESTIGATOR, "HI_Team.Investigators", Color(0, 150, 255))
+	team.SetUp(TEAM_INVESTIGATOR, "HI_Team.Investigators", Color(120, 255, 120))
 	team.SetSpawnPoint(TEAM_INVESTIGATOR, {"info_investigator_respawn"})
 	team.SetClass(TEAM_INVESTIGATOR, {"player_investigator"})
 
 	TEAM_GHOST = 2
-	team.SetUp(TEAM_GHOST, "HI_Team.Ghosts", Color(255, 150, 0))
+	team.SetUp(TEAM_GHOST, "HI_Team.Ghosts", Color(0, 255, 255))
 	team.SetClass(TEAM_GHOST, {"player_ghost"})
 
 	team.SetUp(TEAM_SPECTATOR, "HI_Team.Spectators", Color(255, 255, 255))
