@@ -1,0 +1,7 @@
+"LightmappedGeneric"
+{
+	"$basetexture" "hi_mountainlab/concretewall001b"
+	"$detail" "detail/detailconcrete001a"
+	"$detailscale" 4
+	"$surfaceprop" "concrete"
+}

@@ -4,28 +4,36 @@ timer.Create("PlayerVoiceFilterUpdate", 0.5, 0, function()
 
 	local AllPlayers = player.GetAll()
 
-	for Index, SamplePlayer in ipairs(AllPlayers) do
+	UtilDoForPlayers(player.GetAll(), function(InIndex, InPlayer)
 
-		SamplePlayer.VoiceFilteredPlayers = {}
+		InPlayer.VoiceFilteredPlayers = {}
 
 		local VoiceFilter = RecipientFilter()
 		
-		VoiceFilter:AddPVS(SamplePlayer:EyePos())
+		VoiceFilter:AddPVS(InPlayer:EyePos())
 
-		for Index, VisiblePlayer in ipairs(VoiceFilter:GetPlayers()) do
+		for SampleIndex, VisiblePlayer in ipairs(VoiceFilter:GetPlayers()) do
 
-			SamplePlayer.VoiceFilteredPlayers[VisiblePlayer:UserID()] = true
+			InPlayer.VoiceFilteredPlayers[VisiblePlayer:UserID()] = true
 		end
 
-		--MsgN(SamplePlayer, table.ToString(SamplePlayer.VoiceFilteredPlayers))
-	end
+		--MsgN(InPlayer, table.ToString(InPlayer.VoiceFilteredPlayers))
+	end)
 end)
 
 function GM:PlayerCanHearPlayersVoice(InListener, InTalker)
 
 	--MsgN(InListener, table.ToString(InListener.VoiceFilteredPlayers))
+
+	if InListener:Team() == TEAM_INVESTIGATOR and (InTalker:Team() == TEAM_GHOST or InTalker:Team() == TEAM_SPECTATOR) then
+
+		return false, false
+
+	elseif InListener:Team() ~= TEAM_INVESTIGATOR and InTalker:Team() ~= TEAM_INVESTIGATOR then
+
+		return true, false
 	
-	if UtilCanHearByTalkie(InListener, InTalker) then
+	elseif UtilCanHearByTalkie(InListener, InTalker) then
 
 		return true, false
 
@@ -50,7 +58,6 @@ function GM:PlayerCanHearPlayersVoice(InListener, InTalker)
 
 		return bWithinDistance, true
 	else
-
 		return false, false
 	end
 end

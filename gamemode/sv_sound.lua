@@ -28,13 +28,6 @@ local GhostRandomSoundList = {
 	"hauntedinvestigation/ghostrandom006a.wav"
 }
 
-local SpectatorRandomSoundList = {
-	"hauntedinvestigation/spectatorrandom001a.wav",
-	"hauntedinvestigation/spectatorrandom002a.wav",
-	"hauntedinvestigation/spectatorrandom003a.wav",
-	"hauntedinvestigation/spectatorrandom004a.wav"
-}
-
 local GhostAttackLoopSoundList = {
 	"ambient/levels/citadel/zapper_loop1.wav",
 	"ambient/levels/citadel/zapper_loop2.wav"
@@ -42,12 +35,10 @@ local GhostAttackLoopSoundList = {
 
 function EnableGhostSpecialSounds()
 
-	local AllGhosts = team.GetPlayers(TEAM_GHOST)
+	UtilDoForPlayers(team.GetPlayers(TEAM_GHOST), function(InIndex, InPlayer)
 
-	for SampleIndex, SampleGhost in ipairs(AllGhosts) do
-
-		SampleGhost:SetNWInt("GhostSpecialSoundCountdown", math.random(15.0, 40.0) * SampleIndex)
-	end
+		InPlayer:SetNWInt("GhostSpecialSoundCountdown", math.random(25.0, 60.0) * InIndex)
+	end)
 
 	timer.Create("GhostSpecialSoundTick", 1.0, 0, GhostEmitSpecialSoundTick)
 end
@@ -59,34 +50,37 @@ end
 
 function GhostEmitSpecialSoundTick()
 
-	local AllGhosts = team.GetPlayers(TEAM_GHOST)
+	UtilDoForPlayers(team.GetPlayers(TEAM_GHOST), function(InIndex, InPlayer)
 
-	for SampleIndex, SampleGhost in ipairs(AllGhosts) do
+		if InPlayer:GetNWFloat("EnergyValue") <= 0.0 then
+
+			return
+		end
 
 		local SpecialSoundList = GhostRandomSoundList
 
-		--MsgN(SampleGhost:GetNWBool("bInvestigatorNearby"))
+		--MsgN(InPlayer:GetNWBool("bInvestigatorNearby"))
 
-		if SampleGhost:GetNWBool("bInvestigatorNearby") then
+		if InPlayer:GetNWBool("bInvestigatorNearby") then
 
 			SpecialSoundList = GhostNearbySoundList
 
-			SampleGhost:SetNWInt("GhostSpecialSoundCountdown", SampleGhost:GetNWInt("GhostSpecialSoundCountdown") - 1)
+			InPlayer:SetNWInt("GhostSpecialSoundCountdown", InPlayer:GetNWInt("GhostSpecialSoundCountdown") - 1)
 		end
 
-		SampleGhost:SetNWInt("GhostSpecialSoundCountdown", SampleGhost:GetNWInt("GhostSpecialSoundCountdown") - 1)
+		InPlayer:SetNWInt("GhostSpecialSoundCountdown", InPlayer:GetNWInt("GhostSpecialSoundCountdown") - 1)
 
-		if SampleGhost:GetNWInt("GhostSpecialSoundCountdown") <= 0 then
+		if InPlayer:GetNWInt("GhostSpecialSoundCountdown") <= 0 then
 
-			SampleGhost:SetNWInt("GhostSpecialSoundCountdown", math.random(30.0, 60.0))
+			InPlayer:SetNWInt("GhostSpecialSoundCountdown", math.random(30.0, 60.0))
 
 			local SampleSoundName = table.Random(SpecialSoundList)
 
-			SampleGhost:EmitSound(SampleSoundName, 100)
+			InPlayer:EmitSound(SampleSoundName, 60)
 
-			MsgN(Format("%s %s emit random sound %s", SampleGhost:GetNWBool("bInvestigatorNearby"), SampleGhost, SampleSoundName))
+			MsgN(Format("%s %s emit random sound %s", InPlayer:GetNWBool("bInvestigatorNearby"), InPlayer, SampleSoundName))
 		end
-	end
+	end)
 end
 
 function OnGhostTryMaterialize(InGhost)

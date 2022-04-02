@@ -1,22 +1,40 @@
 ---- Haunted Investigation
 
+local InvestigatorCheckpointName = ""
+
 function OnInvestigationStarted(InScenarioData)
 
 	SetGlobalInt("CurrentGameState", GAMESTATE_INVESTIGATION)
 
-	SetGlobalInt("InvestigationTimeLeft", InScenarioData.BaseTimeLimit)
+	if UtilGetEnableTimeLimit() then
 
-	timer.Create("InvestigationTimer", 1.0, 0, InvestigationTimerTick)
+		SetGlobalInt("InvestigationTimeLeft", InScenarioData.BaseTimeLimit)
 
-	local AllPlayers = player.GetAll()
-
-	for Index, SamplePlayer in ipairs(AllPlayers) do
-
-		if not SamplePlayer:InVehicle() and SamplePlayer:Team() ~= TEAM_SPECTATOR then
-
-			SamplePlayer:Spawn()
-		end
+		timer.Create("InvestigationTimer", 1.0, 0, InvestigationTimerTick)
+	else
+		SetGlobalInt("InvestigationTimeLeft", -1)
 	end
+
+	SetGlobalInt("InvestigatorLifes", UtilGetInvestigatorMaxLifes())
+
+	SetGlobalInt("InvestigationCode", math.random(1000, 9999))
+
+	MsgN(Format("Current keypad code is %i", GetGlobalInt("InvestigationCode")))
+
+	UtilDoForPlayers(team.GetPlayers(TEAM_INVESTIGATOR), function(InIndex, InPlayer)
+
+		if not InPlayer:InVehicle() then
+
+			InPlayer:Spawn()
+		end
+
+		InPlayer:SetNWBool("bRenderLight", false)
+	end)
+
+	UtilDoForPlayers(team.GetPlayers(TEAM_GHOST), function(InIndex, InPlayer)
+
+		InPlayer:Spawn()
+	end)
 
 	StartGhostLogic()
 
@@ -25,7 +43,10 @@ end
 
 function InvestigationTimeAdd(InSeconds)
 
-	SetGlobalInt(GetGlobalInt("InvestigationTimeLeft") + InSeconds)
+	if UtilGetEnableTimeLimit() then
+
+		SetGlobalInt("InvestigationTimeLeft", GetGlobalInt("InvestigationTimeLeft") + InSeconds)
+	end
 end
 
 function InvestigationTimerTick()
@@ -36,11 +57,18 @@ function InvestigationTimerTick()
 
 		SetGlobalInt("InvestigationTimeLeft", TimeLeft - 1)
 	else
-
-		SetGlobalInt("InvestigationTimeLeft", 0)
-
-		timer.Remove("InvestigationTimer")
-
-		StartPostGame()
+		FinishInvestigation(1)
 	end
+end
+
+function GetInvestigatorCheckpointList()
+
+	local OutCheckpointList = ents.FindByName(InvestigatorCheckpointName)
+
+	return OutCheckpointList
+end
+
+function SetInvestigatorCheckpointName(InCheckpointName)
+
+	InvestigatorCheckpointName = InCheckpointName
 end

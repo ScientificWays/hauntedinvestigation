@@ -37,6 +37,14 @@ function UtilCanHearByTalkie(InListener, InTalker)
 	and InListener:GetNWFloat("TalkieFrequency") == InTalker:GetNWFloat("TalkieFrequency")
 end
 
+function UtilDoForPlayers(InPlayerList, InFunction)
+
+	for SampleIndex, SamplePlayer in ipairs(InPlayerList) do
+
+		InFunction(SampleIndex, SamplePlayer)
+	end
+end
+
 function GM:CreateTeams()
 
 	TEAM_INVESTIGATOR = 1
@@ -46,6 +54,7 @@ function GM:CreateTeams()
 
 	TEAM_GHOST = 2
 	team.SetUp(TEAM_GHOST, "HI_Team.Ghosts", Color(0, 255, 255))
+	team.SetSpawnPoint(TEAM_GHOST, {"info_investigator_respawn"})
 	team.SetClass(TEAM_GHOST, {"player_ghost"})
 
 	team.SetUp(TEAM_SPECTATOR, "HI_Team.Spectators", Color(255, 255, 255))

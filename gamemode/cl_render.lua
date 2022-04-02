@@ -24,10 +24,11 @@ timer.Create("PostProcessUpdate", 0.2, 0, function()
 
 	if Client:Team() == TEAM_INVESTIGATOR then
 
-		if Client:GetNWBool("bGhostNearby") then
+		if Client:GetNWBool("bChargedGhostNearby") then
 
 			LerpPresenceValue = Lerp(FrameTime() * 0.4, LerpPresenceValue, 1.0)
 
+			--MsgN(LerpPresenceValue)
 		else
 
 			LerpPresenceValue = Lerp(FrameTime() * 0.4, LerpPresenceValue, 0.0)
@@ -44,18 +45,26 @@ timer.Create("PostProcessUpdate", 0.2, 0, function()
 			--MsgN(OldLerpPresenceValue)
 		end
 
-	elseif Client:Team() == TEAM_GHOST then
+	else
+		Client:ConCommand("pp_motionblur_addalpha 1")
+		Client:ConCommand("pp_motionblur_drawalpha 1")
+		Client:ConCommand("pp_motionblur_delay 0")
+	end
+	
+	if Client:Team() == TEAM_GHOST then
 
 		local SpectralValue = Client:GetNWFloat("SpectralValue")
 
 		if SpectralValue ~= OldSpectralValue then
 
 			Client:ConCommand(Format("pp_colormod_addg %f", Lerp(SpectralValue, 0, 20)))
-
 			Client:ConCommand(Format("pp_colormod_addb %f", Lerp(SpectralValue, 0, 20)))
-
 			Client:ConCommand(Format("pp_colormod_brightness %f", Lerp(SpectralValue, 0.0, -0.4)))
 		end
+	else
+		Client:ConCommand("pp_colormod_addg 0")
+		Client:ConCommand("pp_colormod_addb 0")
+		Client:ConCommand("pp_colormod_brightness 0")
 	end
 end)
 
@@ -88,7 +97,7 @@ hook.Add("Think", "NightVision", function()
 	end
 end)
 
-hook.Add("PostDrawTranslucentRenderables", "GhostAreaDraw", function()
+hook.Add("PostDrawTranslucentRenderables", "GhostAreaDraw", function(bDrawingDepth, bDrawingSkybox, bDraw3DSkybox)
 
 	local Client = LocalPlayer()
 
@@ -174,4 +183,55 @@ function GM:PrePlayerDraw(InPlayer, InFlags)
 	end
 
 	return false
+end
+
+function GM:PostPlayerDraw(InPlayer, InFlags)
+
+	local Client = LocalPlayer()
+
+	local bDrawName = false
+
+	if IsValid(InPlayer) and InPlayer:EntIndex() ~= Client:EntIndex() and InPlayer:Alive() then
+	
+		if Client:Team() == TEAM_SPECTATOR then
+
+			bDrawName = true
+
+		elseif Client:Team() == TEAM_GHOST then
+
+			if InPlayer:Team() == TEAM_GHOST then
+
+				bDrawName = true
+
+			elseif InPlayer:Team() == TEAM_INVESTIGATOR and InPlayer:GetNWFloat("EnergyValue") < 1.0 then
+
+				bDrawName = true
+			end
+		end
+	end 
+
+	if bDrawName then
+
+		local RenderOffset = Vector(0, 0, 80)
+
+		local RenderAngle = Client:EyeAngles()
+
+		local RenderPos = InPlayer:GetPos() + RenderOffset + RenderAngle:Up()
+	
+		RenderAngle:RotateAroundAxis(RenderAngle:Forward(), 90)
+
+		RenderAngle:RotateAroundAxis(RenderAngle:Right(), 90)
+
+		--MsgN(0.001 * RenderPos:Distance(Client:GetPos()))
+		
+		cam.Start3D2D(RenderPos, Angle(0, RenderAngle.yaw, 90), 0.001 * RenderPos:Distance(Client:GetPos()))
+
+		cam.IgnoreZ(true)
+
+		draw.DrawText(InPlayer:GetName(), "HUDText", 2, 2, team.GetColor(InPlayer:Team()), TEXT_ALIGN_CENTER)
+
+		cam.IgnoreZ(false)
+
+		cam.End3D2D()
+	end
 end

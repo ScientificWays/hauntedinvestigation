@@ -18,8 +18,8 @@ SWEP.Base                   = "weapon_base"
 
 SWEP.Spawnable				= true
 
-SWEP.ViewModel				= Model("models/weapons/c_hi_talkie.mdl")
-SWEP.WorldModel				= Model("models/weapons/w_hi_talkie.mdl")
+SWEP.ViewModel				= Model("models/weapons/c_rpp_talkie.mdl")
+SWEP.WorldModel				= Model("models/weapons/w_rpp_talkie.mdl")
 SWEP.ViewModelFOV			= 54
 SWEP.UseHands				= true
 
@@ -66,14 +66,12 @@ local function UpdatePlayerFrequency(InPlayer, bAdd)
 	InPlayer:EmitSound(table.Random(FrequencySwitchSoundList), 50)
 end
 
--- Called when ghost starts attacking investigator
+-- Called on spawn or when ghost starts attacking investigator
 function RandomizeTalkieFrequency(InPlayer)
 
 	local NewFrequencyIndex = math.random(5)
 
 	InPlayer:SetNWFloat("TalkieFrequency", 99.5 + NewFrequencyIndex * 0.5)
-
-	InPlayer:EmitSound(table.Random(FrequencySwitchSoundList), 50)
 end
 
 function SWEP:Initialize()
@@ -90,7 +88,7 @@ function SWEP:Equip()
 
 	local PlayerOwner = self:GetOwner()
 
-	PlayerOwner:SetNWFloat("TalkieFrequency", 0.0)
+	RandomizeTalkieFrequency(PlayerOwner)
 
 	self.AllowDrop = PlayerOwner:Team() ~= TEAM_GUARD
 end
@@ -109,32 +107,16 @@ end
 
 function SWEP:PrimaryAttack()
 
-	if CLIENT then
-
-		return
-	end
-
-	self:SetNextPrimaryFire(CurTime() + 2.0)
-
-	self:SetNextSecondaryFire(CurTime() + 2.0)
-
-	self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
-
-	local PlayerOwner = self:GetOwner()
-
-	UpdatePlayerFrequency(PlayerOwner, true)
-	
-	timer.Create(Format("weapon_idle_%s", self:EntIndex()), self:SequenceDuration(), 1, function()
-
-		if IsValid(self) then
-
-			self:SendWeaponAnim(ACT_VM_IDLE)
-		end
-	end)
+	self:FrequencySwitch(true)
 end
 
 function SWEP:SecondaryAttack()
 	
+	self:FrequencySwitch(false)
+end
+
+function SWEP:FrequencySwitch(bPrimary)
+
 	if CLIENT then
 
 		return
@@ -142,15 +124,20 @@ function SWEP:SecondaryAttack()
 
 	--MsgN("Unarmed secondary attack")
 
-	self:SetNextPrimaryFire(CurTime() + 2.0)
+	self:SetNextPrimaryFire(CurTime() + 1.0)
 
-	self:SetNextSecondaryFire(CurTime() + 2.0)
+	self:SetNextSecondaryFire(CurTime() + 1.0)
 
-	self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
+	if bPrimary then
+
+		self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+	else
+		self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
+	end
 
 	local PlayerOwner = self:GetOwner()
 
-	UpdatePlayerFrequency(PlayerOwner, false)
+	UpdatePlayerFrequency(PlayerOwner, bPrimary)
 
 	timer.Create(Format("weapon_idle_%s", self:EntIndex()), self:SequenceDuration(), 1, function()
 

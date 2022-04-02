@@ -1,0 +1,11 @@
+"LightmappedGeneric"
+{
+	"$baseTexture" "hi_mountainlab/cliff001a"
+	"$basetexture2" "hi_mountainlab/cliff001b"
+	"$surfaceprop" "concrete"
+	"$surfaceprop2" "concrete"
+	"$detail" "detail\rock_detail_01"
+	"$detailscale" "8"
+	"$detailblendfactor" 1
+	"$detailblendmode" 0
+}

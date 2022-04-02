@@ -10,7 +10,7 @@ PLAYER.DisplayName          = "Investigator Class"
 
 PLAYER.SlowWalkSpeed        = 100		-- How fast to move when slow-walking (+WALK)
 PLAYER.WalkSpeed            = 150		-- How fast to move when not running
-PLAYER.RunSpeed             = 250		-- How fast to move when running
+PLAYER.RunSpeed             = 240		-- How fast to move when running
 PLAYER.CrouchedWalkSpeed    = 0.5		-- Multiply move speed by this when crouching
 PLAYER.DuckSpeed            = 0.3		-- How fast to go from not ducking, to ducking
 PLAYER.UnDuckSpeed          = 0.3		-- How fast to go from ducking, to not ducking
@@ -48,13 +48,21 @@ function PLAYER:SetModel()
 	end
 
 	self.Player:SetMaterial("")
+
+	self.Player:DrawShadow(true)
 end
 
 function PLAYER:Spawn()
 
+	--MsgN(Format("%s Spawn()", self.Player))
+
+	self.Player:AllowFlashlight(true)
+
 	self.Player:SetNWBool("bRenderLight", UtilGetCurrentGameState() ~= GAMESTATE_INVESTIGATION)
 
 	self.Player:SetNWFloat("EnergyValue", 1.0)
+
+	self.Player:SetNWFloat("SpectralValue", 0.0)
 
 	if UtilGetCurrentGameState() == GAMESTATE_VEHICLEINTRO then
 
@@ -69,6 +77,8 @@ function PLAYER:Loadout()
 	self.Player:Give("weapon_hi_unarmed")
 	self.Player:Give("weapon_hi_fists")
 	self.Player:Give("weapon_hi_talkie")
+
+	self.Player:Give("weapon_crowbar")
 end
  
 player_manager.RegisterClass("player_investigator", PLAYER, "player_default")

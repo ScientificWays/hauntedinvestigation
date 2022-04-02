@@ -2,51 +2,27 @@
 
 SabotageRelayList = {}
 
-hook.Add("KeyPress", "GhostSabotageActivate", function(InPlayer, InKey)
-
-	if InKey == IN_ATTACK2 then
-
-		TryActivateNearestSabotage(InPlayer)
-	end
-end)
-
-timer.Create("NearestSabotageUpdate", 2.0, 0, function()
-
-	if table.IsEmpty(SabotageRelayList) then
-
-		MsgN("Warning! SabotageRelayList is empty for this map. Consider adding logic_relay with _GhostSabotage postfix!")
-
-		timer.Remove("NearestSabotageUpdate")
-
-		return
-	end
-
-	UpdateNearestSabotageForGhosts()
-end)
-
 function UpdateNearestSabotageForGhosts()
 
-	local AllGhosts = team.GetPlayers(TEAM_GHOST)
+	UtilDoForPlayers(team.GetPlayers(TEAM_GHOST), function(InIndex, InPlayer)
 
-	for SampleIndex, SampleGhost in ipairs(AllGhosts) do
-
-		local SabotageEntity = UtilGetNearestEntity(SabotageRelayList, SampleGhost:GetPos(), 1024.0)
+		local SabotageEntity = UtilGetNearestEntity(SabotageRelayList, InPlayer:GetPos(), 1024.0)
 
 		--MsgN(SabotageEntity)
 
 		if IsValid(SabotageEntity) and SabotageEntity:GetNWFloat("GhostSabotageCooldownTime") < CurTime() then
 
-			MsgN(SabotageEntity:GetPos())
+			--MsgN(SabotageEntity:GetPos())
 
-			SampleGhost:SetNWVector("SabotageRelayPos", SabotageEntity:GetPos())
+			InPlayer:SetNWVector("SabotageRelayPos", SabotageEntity:GetPos())
 
-			SampleGhost.NearestSabotage = SabotageEntity
+			InPlayer.NearestSabotage = SabotageEntity
 		else
-			SampleGhost:SetNWVector("SabotageRelayPos", Vector())
+			InPlayer:SetNWVector("SabotageRelayPos", Vector())
 
-			SampleGhost.NearestSabotage = nil
+			InPlayer.NearestSabotage = nil
 		end
-	end
+	end)
 end
 
 function RegisterSabotageData(InSabotageRelay)
@@ -58,9 +34,11 @@ end
 
 function CanActivateSabotage(InPlayer)
 
-	return InPlayer:Team() == TEAM_GHOST
+	return UtilGetCurrentGameState() == GAMESTATE_INVESTIGATION
+		and InPlayer:Team() == TEAM_GHOST
 		and InPlayer.NearestSabotage ~= nil
 		and InPlayer.NearestSabotage:GetNWFloat("GhostSabotageCooldownTime") < CurTime()
+		and InPlayer:GetNWFloat("EnergyValue") >= 0.25
 end
 
 function TryActivateNearestSabotage(InPlayer)
@@ -70,6 +48,8 @@ function TryActivateNearestSabotage(InPlayer)
 		InPlayer.NearestSabotage:SetNWFloat("GhostSabotageCooldownTime", CurTime() + UtilGetGhostSabotageCooldown())
 
 		InPlayer.NearestSabotage:Input("Trigger")
+
+		InPlayer:SetNWFloat("EnergyValue", math.Clamp(InPlayer:GetNWFloat("EnergyValue") - 0.25, 0.0, 1.0))
 
 		UpdateNearestSabotageForGhosts()
 	end

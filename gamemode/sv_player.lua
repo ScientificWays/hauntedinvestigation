@@ -1,8 +1,47 @@
 ---- Haunted Investigation
 
+timer.Create("InvestigatorRegenerationTick", 2.0, 0, function()
+
+	UtilDoForPlayers(team.GetPlayers(TEAM_INVESTIGATOR), function(InIndex, InPlayer)
+
+		InPlayer:SetHealth(math.Clamp(InPlayer:Health() + 1, 0, InPlayer:GetMaxHealth()))
+	end)
+end)
+
+function GM:PlayerCanJoinTeam(InPlayer, InNewTeam)
+
+	if InPlayer:Team() == InNewTeam
+		or (GetGlobalInt("CurrentGameState") == GAMESTATE_INVESTIGATION
+			and InNewTeam == TEAM_INVESTIGATOR
+			and GetGlobalInt("InvestigatorLifes") <= 0) then
+
+		return false
+	end
+
+	return true
+end
+
+function GM:PlayerJoinTeam(InPlayer, InNewTeam)
+
+	local OldTeam = InPlayer:Team()
+
+	if InPlayer:Alive() then
+
+		InPlayer:KillSilent()
+	end
+
+	InPlayer:SetTeam(InNewTeam)
+
+	InPlayer.LastTeamSwitch = RealTime()
+
+	GAMEMODE:OnPlayerChangedTeam(InPlayer, OldTeam, InNewTeam)
+end
+
 function GM:OnPlayerChangedTeam(InPlayer, InOldTeam, InNewTeam)
 
 	InPlayer:Spawn()
+	
+	UtilSendChatMessageToPlayers({"HI_Event.ChangeTeam", InPlayer:GetName(), team.GetName(InNewTeam)})
 end
 
 --[[function GM:PlayerDeathThink(InPlayer)
@@ -19,8 +58,14 @@ function GM:PlayerSelectSpawn(InPlayer, bTransition)
 
 		if InPlayer:Team() == TEAM_INVESTIGATOR then
 
-			SpawnPointList = team.GetSpawnPoints(TEAM_INVESTIGATOR) or {}
+			local CheckpointList = GetInvestigatorCheckpointList()
 
+			if not table.IsEmpty(CheckpointList) then
+
+				SpawnPointList = CheckpointList
+			else
+				SpawnPointList = team.GetSpawnPoints(TEAM_INVESTIGATOR) or {}
+			end
 		else
 			SpawnPointList = team.GetPlayers(TEAM_INVESTIGATOR)
 		end
@@ -127,6 +172,8 @@ function GM:EntityTakeDamage(InTarget, InDamageInfo)
 
 	if InTarget:IsPlayer() and InTarget:Team() == TEAM_GHOST then
 
+		InTarget.DamageSlowEndTime = InTarget.DamageSlowEndTime or 0.0
+
 		InTarget.DamageSlowEndTime = math.max(InTarget.DamageSlowEndTime, 0.05 * InDamageInfo:GetDamage())
 
 		return true
@@ -138,4 +185,38 @@ end
 function GM:PlayerNoClip(InPlayer, bDesiredNoClipState)
 	
 	return GetConVar("sv_cheats"):GetInt() > 0 and InPlayer:Alive()
+end
+
+function GM:PostPlayerDeath(InPlayer)
+
+	if InPlayer:Team() == TEAM_INVESTIGATOR then
+
+		SetGlobalInt("InvestigatorLifes", GetGlobalInt("InvestigatorLifes") - 1)
+
+		UtilSendChatMessageToPlayers({"HI_Event.InvestigatorLifesDecrease", InPlayer:GetName(), GetGlobalInt("InvestigatorLifes")})
+
+		if GetGlobalInt("InvestigatorLifes") <= 0 then
+
+			UtilSendChatMessageToPlayers({"HI_Event.InvestigatorNoLifes"})
+
+			GAMEMODE:PlayerJoinTeam(InPlayer, TEAM_SPECTATOR)
+
+			local bNoAliveInvestigators = true
+
+			UtilDoForPlayers(team.GetPlayers(TEAM_INVESTIGATOR), function(InIndex, InPlayer)
+
+				if InPlayer:Alive() then
+
+					bNoAliveInvestigators = false
+
+					return
+				end
+			end)
+
+			if bNoAliveInvestigators then
+
+				FinishInvestigation(2)
+			end
+		end
+	end
 end

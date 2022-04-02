@@ -61,23 +61,19 @@ function OnIntroStarted(InIntroData)
 		end
 	end
 
-	MsgN(IntroDriverSeat)
+	--MsgN(IntroDriverSeat)
 
-	PrintTable(IntroPassengerSeats)
+	--PrintTable(IntroPassengerSeats)
 
-	local AllInvestigators = team.GetPlayers(TEAM_INVESTIGATOR)
+	UtilDoForPlayers(team.GetPlayers(TEAM_INVESTIGATOR), function(InIndex, InPlayer)
 
-	for Index, SampleInvestigator in ipairs(AllInvestigators) do
+		InPlayer:Spawn()
+	end)
 
-		SampleInvestigator:Spawn()
-	end
+	UtilDoForPlayers(team.GetPlayers(TEAM_GHOST), function(InIndex, InPlayer)
 
-	local AllGhosts = team.GetPlayers(TEAM_GHOST)
-
-	for Index, SampleGhost in ipairs(AllGhosts) do
-
-		SampleGhost:Spectate(OBS_MODE_CHASE)
+		InPlayer:Spectate(OBS_MODE_CHASE)
 		
-		SampleGhost:SpectateEntity(table.Random(AllInvestigators))
-	end
+		InPlayer:SpectateEntity(table.Random(team.GetPlayers(TEAM_INVESTIGATOR)))
+	end)
 end

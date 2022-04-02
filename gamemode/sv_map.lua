@@ -1,13 +1,11 @@
 ---- Haunted Investigation
 
---GhostAreaList = {}
+local IntroData = {}
 
-IntroData = {}
+local InvestigationStartRelayName = ""
 
-InvestigationStartRelayName = ""
-
-SelectedScenarioIndex = 1
-ScenarioDataList = {}
+local SelectedScenarioIndex = 1
+local ScenarioDataList = {}
 
 function InitMap()
 
@@ -29,9 +27,25 @@ function InitMap()
 
 			MsgN(SampleEntityName.." is registered!")
 
-			SampleEntity:SetNWBool("bShowHint")
+			SampleEntity:SetNWBool("bShowHint", true)
 
-			SampleEntity:SetNWBool("bCodeInfo")
+			SampleEntity:SetNWBool("bCodeInfo", true)
+
+		elseif string.EndsWith(SampleEntityName, "_CodeKeypad") then
+
+			MsgN(SampleEntityName.." is registered!")
+
+			SampleEntity:SetNWBool("bShowHint", true)
+
+			SampleEntity:SetNWBool("bCodeKeypad", true)
+
+		elseif string.EndsWith(SampleEntityName, "_Artifact") then
+
+			MsgN(SampleEntityName.." is registered!")
+
+			SampleEntity:SetNWBool("bShowHint", true)
+
+			SampleEntity:SetNWBool("bArtifact", true)
 
 		elseif string.EndsWith(SampleEntityName, "_GhostSabotage") then
 
@@ -62,6 +76,7 @@ function RegisterScenarioData(InScenarioIndex, InScenarioRelayName, InScenarioGh
 		GhostAreasName = InScenarioGhostAreasName,
 		BaseTimeLimit = InBaseTimeLimit
 	}
+	MsgN(Format("Current scenarion data: %s", table.ToString(ScenarioDataList)))
 end
 
 function RegisterInvestigationStartRelay(InInvestigationStartRelayName)
@@ -87,14 +102,10 @@ function StartGame(bSkipIntro)
 
 	UtilSendChatMessageToPlayers({"HI_Event.StartGame", SelectedScenarioIndex})
 
-	local AllPlayers = player.GetAll()
+	UtilDoForPlayers(player.GetAll(), function(InIndex, InPlayer)
 
-	for Index, SamplePlayer in ipairs(AllPlayers) do
-
-		SamplePlayer:Spawn()
-	end
-
-	MsgN(table.ToString(ScenarioDataList))
+		InPlayer:Spawn()
+	end)
 
 	if ScenarioDataList[SelectedScenarioIndex] == nil then
 
@@ -103,22 +114,27 @@ function StartGame(bSkipIntro)
 		InitMap()
 	end
 
-	local ScenarioData = ScenarioDataList[SelectedScenarioIndex]
+	timer.Simple(0.4, function()
 
-	local ScenarioRelay = ents.FindByName(ScenarioData.RelayName)[1]
+		MsgN(Format("ScenarioDataList: %s", table.ToString(ScenarioDataList)))
 
-	local ScenarioGhostAreaList = ents.FindByName(ScenarioData.GhostAreasName)
+		local ScenarioData = ScenarioDataList[SelectedScenarioIndex]
 
-	SetGhostAreaList(ScenarioGhostAreaList)
+		local ScenarioRelay = ents.FindByName(ScenarioData.RelayName)[1]
 
-	ScenarioRelay:Input("Trigger")
+		local ScenarioGhostAreaList = ents.FindByName(ScenarioData.GhostAreasName)
 
-	if bSkipIntro then
+		SetGhostAreaList(ScenarioGhostAreaList)
 
-		StartInvestigation()
-	else
-		StartIntro()
-	end
+		ScenarioRelay:Input("Trigger")
+
+		if bSkipIntro then
+
+			StartInvestigation()
+		else
+			StartIntro()
+		end
+	end)
 end
 
 function StartIntro()
@@ -149,6 +165,41 @@ function StartInvestigation()
 	OnInvestigationStarted(ScenarioDataList[SelectedScenarioIndex])
 end
 
+function FinishInvestigation(InFinishCode)
+
+	SetGlobalInt("InvestigationTimeLeft", 0)
+
+	timer.Remove("InvestigationTimer")
+
+	local FinishDelay = 2.0
+
+	if InFinishCode == 1 then
+
+		FinishDelay = 4.0
+
+		UtilSendChatMessageToPlayers({"HI_Event.TimeoutGameEnd"})
+
+	elseif InFinishCode == 2 then
+
+		UtilSendChatMessageToPlayers({"HI_Event.NoLifesGameEnd"})
+	end
+
+	UtilDoForPlayers(player.GetAll(), function(InIndex, InPlayer)
+
+		InPlayer:ScreenFade(SCREENFADE.OUT, COLOR_WHITE, FinishDelay, 2.0)
+	end)
+
+	timer.Simple(FinishDelay, function()
+
+		StartPostGame()
+
+		UtilDoForPlayers(player.GetAll(), function(InIndex, InPlayer)
+
+			InPlayer:ScreenFade(SCREENFADE.IN, COLOR_WHITE, 0.0, 2.0)
+		end)
+	end)
+end
+
 function StartPostGame()
 
 	if GetGlobalInt("CurrentGameState") ~= GAMESTATE_INVESTIGATION then
@@ -158,9 +209,33 @@ function StartPostGame()
 		return
 	end
 
+	SetGlobalInt("CurrentGameState", GAMESTATE_POSTGAME)
+
 	UtilSendChatMessageToPlayers({"HI_Event.EndGame"})
 
 	StopGhostLogic()
 
 	DisableGhostSpecialSounds()
+
+	UtilDoForPlayers(player.GetAll(), function(InIndex, InPlayer)
+
+		InPlayer:Spawn()
+	end)
+end
+
+function ServerReceiveTryUseKeypadCode(InMessageLength, InPlayer)
+
+	local ReceiveCode = net.ReadInt(32)
+
+	if ReceiveCode == GetGlobalInt("InvestigationCode") then
+
+		local SampleCodeSuccessRelays = ents.FindByName("*_CodeSuccess")
+
+		if not table.IsEmpty(SampleCodeSuccessRelays) then
+
+			local SuccessRelay = SampleCodeSuccessRelays[1]
+
+			SuccessRelay:Input("Trigger")
+		end
+	end
 end

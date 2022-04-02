@@ -4,7 +4,7 @@ hook.Add("SetupMove", "EnergyMove", function(InPlayer, InMoveData, InCommandData
 
 	if InPlayer:Team() == TEAM_INVESTIGATOR then
 
-		local FinalMaxSpeed = Lerp(InPlayer:GetNWFloat("EnergyValue"), 100, InMoveData:GetMaxClientSpeed())
+		local FinalMaxSpeed = Lerp(math.Clamp(InPlayer:GetNWFloat("EnergyValue") + 0.5, 0.0, 1.0), 100, InMoveData:GetMaxClientSpeed())
 
 		InMoveData:SetMaxClientSpeed(FinalMaxSpeed)
 	end
@@ -42,7 +42,7 @@ local function HandleInvestigatorSprintingTick(InInvestigatorPlayer)
 
 	if EnergyDelta ~= 0.0 then
 
-		MsgN(InInvestigatorPlayer:GetNWFloat("EnergyValue"))
+		--MsgN(Format("Set energy value for %s %s", InInvestigatorPlayer, InInvestigatorPlayer:GetNWFloat("EnergyValue")))
 
 		UtilAddToFractionalNWFloat(InInvestigatorPlayer, "EnergyValue", EnergyDelta)
 
@@ -122,26 +122,22 @@ end
 
 timer.Create("InvestigatorEnergyTick", 1.0, 0, function()
 
-	local AllInvestigators = team.GetPlayers(TEAM_INVESTIGATOR)
+	UtilDoForPlayers(team.GetPlayers(TEAM_INVESTIGATOR), function(InIndex, InPlayer)
 
-	for Index, SampleInvestigator in ipairs(AllInvestigators) do
+		if not InPlayer:GetNWBool("bSpectator") then
 
-		if not SampleInvestigator:GetNWBool("bSpectator") then
-
-			HandleInvestigatorSprintingTick(SampleInvestigator)
+			HandleInvestigatorSprintingTick(InPlayer)
 		end
-	end
+	end)
 end)
 
 timer.Create("GhostAttackTick", 0.25, 0, function()
 
-	local AllGhosts = team.GetPlayers(TEAM_GHOST)
+	UtilDoForPlayers(team.GetPlayers(TEAM_GHOST), function(InIndex, InPlayer)
 
-	for Index, SampleGhost in ipairs(AllGhosts) do
+		if not InPlayer:GetNWBool("bSpectator") then
 
-		if not SampleGhost:GetNWBool("bSpectator") then
-
-			HandleGhostSprintingTick(SampleGhost)
+			HandleGhostSprintingTick(InPlayer)
 		end
-	end
+	end)
 end)

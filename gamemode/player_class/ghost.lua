@@ -8,8 +8,8 @@ local PLAYER = {}
  
 PLAYER.DisplayName          = "Ghost Class"
 
-PLAYER.SlowWalkSpeed        = 200		-- How fast to move when slow-walking (+WALK)
-PLAYER.WalkSpeed            = 200		-- How fast to move when not running
+PLAYER.SlowWalkSpeed        = 300		-- How fast to move when slow-walking (+WALK)
+PLAYER.WalkSpeed            = 300		-- How fast to move when not running
 PLAYER.RunSpeed             = 200		-- How fast to move when running
 PLAYER.CrouchedWalkSpeed    = 0.5		-- Multiply move speed by this when crouching
 PLAYER.DuckSpeed            = 0.3		-- How fast to go from not ducking, to ducking
@@ -57,6 +57,8 @@ end
 
 function PLAYER:Spawn()
 
+	self.Player:AllowFlashlight(false)
+
 	self.Player:SetNWBool("bRenderLight", true)
 
 	self.Player:SetNWVector("GhostAreaMin", Vector())
@@ -66,6 +68,8 @@ function PLAYER:Spawn()
 	self.Player:SetNWFloat("SpectralValue", 1.0)
 
 	self.Player:SetNWFloat("EnergyValue", 0.0)
+
+	self.Player:SetNWInt("GhostPropType", -1)
 		
 	if UtilGetCurrentGameState() == GAMESTATE_VEHICLEINTRO then
 

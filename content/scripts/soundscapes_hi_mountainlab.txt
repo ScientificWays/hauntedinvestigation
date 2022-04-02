@@ -91,8 +91,8 @@
 
 	"playlooping"
 	{
-		"volume"	"0.25"
-		"wave"		"ambient\atmosphere\corridor.wav"
+		"volume"	"0.5"
+		"wave"		"ambient\atmosphere\quiet_cellblock_amb.wav"
 		"pitch"		"100"
 	}
 	"playsoundscape"
@@ -115,7 +115,7 @@
 	"playlooping"
 	{
 		"volume"	"0.25"
-		"wave"		"ambient\atmosphere\ambience_base.wav"
+		"wave"		"ambient\atmosphere\corridor.wav"
 		"pitch"		"100"
 	}
 	"playsoundscape"

@@ -113,5 +113,29 @@
 			"type"		"Numeric"
 			"default"	"60"
 		}
+		14
+		{
+			"name"		"sk_ghost_prop_cooldown"
+			"text"		"Ghost prop cooldown"
+			"help"		"Ghost prop cooldown"
+			"type"		"Numeric"
+			"default"	"30"
+		}
+		15
+		{
+			"name"		"sk_investigator_max_lifes"
+			"text"		"Investigator max lifes"
+			"help"		"Maximum amount of respawns for investigators"
+			"type"		"Numeric"
+			"default"	"4"
+		}
+		16
+		{
+			"name"		"sk_enable_time_limit"
+			"text"		"Enable time limit"
+			"help"		"If enabled, investigation phase will have scenario's time limit"
+			"type"		"CheckBox"
+			"default"	"1"
+		}
 	}
 }

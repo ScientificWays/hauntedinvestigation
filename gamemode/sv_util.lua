@@ -65,6 +65,21 @@ function UtilGetGhostSabotageCooldown()
 	return GetConVar("sk_ghost_sabotage_cooldown"):GetFloat()
 end
 
+function UtilGetGhostPropCooldown()
+
+	return GetConVar("sk_ghost_prop_cooldown"):GetFloat()
+end
+
+function UtilGetInvestigatorMaxLifes()
+
+	return GetConVar("sk_investigator_max_lifes"):GetFloat()
+end
+
+function UtilGetEnableTimeLimit()
+
+	return GetConVar("sk_enable_time_limit"):GetBool()
+end
+
 function UtilSendChatMessageToPlayers(InMessageStrings)
 
 	net.Start("SendChatMessageToClients")
@@ -111,7 +126,7 @@ function UtilGetNearestEntity(InEntityList, InCheckPos, InMaxDistance)
 
 	local FilteredDistanceSquared = InMaxDistance * InMaxDistance
 
-	MsgN(table.ToString(InEntityList))
+	--MsgN(table.ToString(InEntityList))
 
 	for SampleIndex, SampleEntity in ipairs(InEntityList) do
 
@@ -129,7 +144,7 @@ function UtilGetNearestEntity(InEntityList, InCheckPos, InMaxDistance)
 		end
 	end
 
-	MsgN(OutEntity)
+	--MsgN(OutEntity)
 
 	return OutEntity
 end
