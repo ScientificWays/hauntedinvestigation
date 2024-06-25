@@ -42,6 +42,15 @@ function GM:OnPlayerChangedTeam(InPlayer, InOldTeam, InNewTeam)
 	InPlayer:Spawn()
 	
 	UtilSendChatMessageToPlayers({"HI_Event.ChangeTeam", InPlayer:GetName(), team.GetName(InNewTeam)})
+
+	if InNewTeam == TEAM_INVESTIGATOR or InNewTeam == TEAM_GHOST then
+
+		net.Start("ClientOpenGuide")
+
+		net.WriteInt(InNewTeam, 32)
+
+		net.Send(InPlayer)
+	end
 end
 
 --[[function GM:PlayerDeathThink(InPlayer)

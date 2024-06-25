@@ -12,6 +12,10 @@ local SoundDataList = {
 	[3] = {
 		Name = "HI_Spectator.Spooky01",
 		List = {"hauntedinvestigation/spectatorspooky001a.wav", "hauntedinvestigation/spectatorspooky002a.wav", "hauntedinvestigation/spectatorspooky003a.wav", "hauntedinvestigation/spectatorspooky004a.wav"}
+	},
+	[4] = {
+		Name = "HI_Spectator.Creeper",
+		List = {"hauntedinvestigation/spectatorcreeper001a.wav"}
 	}
 }
 

@@ -78,7 +78,7 @@ function PickAreaForGhost(InGhostPlayer)
 		GoodGhostAreaList = GhostAreaList
 	end
 
-	MsgN(Format("Potential areas for %s: %s", FinalGhostArea, table.ToString(GoodGhostAreaList)))
+	MsgN(Format("Potential areas for %s: %s", InGhostPlayer, table.ToString(GoodGhostAreaList)))
 
 	local FinalGhostArea = table.Random(GoodGhostAreaList)
 
@@ -97,7 +97,7 @@ function PickAreaForGhost(InGhostPlayer)
 	GhostAreaCurrentMax = math.max(GhostAreaCurrentMax, FinalGhostArea.CurrentGhostCount)
 end
 
-local function UpdateGhostAreas()
+function UpdateGhostAreas()
 
 	GhostAreaCurrentMin = 0
 
@@ -105,8 +105,6 @@ local function UpdateGhostAreas()
 
 		PickAreaForGhost(InPlayer)
 	end)
-
-	timer.Create("GhostAreaChangeTimer", UtilGetGhostAreaChangeDelay(), 1, UpdateGhostAreas)
 end
 
 function StartGhostLogic()
@@ -122,7 +120,7 @@ function StartGhostLogic()
 
 	timer.Create("GhostPropsTickTimer", 1.19, 0, UpdateGhostProps)
 
-	UpdateGhostAreas()
+	timer.Create("GhostAreaChangeTimer", UtilGetGhostAreaChangeDelay(), 0, UpdateGhostAreas)
 end
 
 function StopGhostLogic()
@@ -151,7 +149,7 @@ function GhostPresenceOrAttackTick()
 
 			local InvestigatorPos = InInvestigator:GetPos()
 
-			if math.abs(GhostPos.z - InvestigatorPos.z) < 256.0 then
+			if math.abs(GhostPos.z - InvestigatorPos.z) < 128.0 then
 
 				InvestigatorPresenceTick(InInvestigator, InGhost, math.DistanceSqr(GhostPos.x, GhostPos.y, InvestigatorPos.x, InvestigatorPos.y) < math.pow(UtilGetGhostPresenceRadius(), 2))
 			else
@@ -163,6 +161,8 @@ function GhostPresenceOrAttackTick()
 				InvestigatorAttackedTick(InInvestigator, InGhost, GhostPos:DistToSqr(InvestigatorPos) < math.pow(UtilGetGhostAttackRadius(), 2))
 
 				TryAddAttackTrail(InGhost, InInvestigator)
+
+				return
 			else
 				TryRemoveAttackTrail(InGhost, InInvestigator)
 			end

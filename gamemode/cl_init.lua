@@ -7,6 +7,7 @@ include("sh_spectator.lua")
 include("cl_util.lua")
 
 include("cl_hud.lua")
+include("cl_guide.lua")
 include("cl_props.lua")
 include("cl_render.lua")
 include("cl_keypad.lua")
@@ -22,6 +23,11 @@ surface.CreateFont("HUDTextSmall", {font = "Tahoma",
 function GM:Initialize()
 
 	MsgN("Client Initialize()")
+
+	net.Receive("ClientOpenGuide", function(InMessageLength, InPlayer)
+
+		ShowGuide(net.ReadInt(32))
+	end)
 
 	net.Receive("ClientOpenKeypad", function(InMessageLength, InPlayer)
 

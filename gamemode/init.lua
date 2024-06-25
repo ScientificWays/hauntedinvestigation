@@ -8,6 +8,7 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("cl_util.lua")
 
 AddCSLuaFile("cl_hud.lua")
+AddCSLuaFile("cl_guide.lua")
 AddCSLuaFile("cl_props.lua")
 AddCSLuaFile("cl_render.lua")
 AddCSLuaFile("cl_keypad.lua")
@@ -33,6 +34,7 @@ include("sv_spectator.lua")
 include("sv_sabotages.lua")
 include("sv_investigation.lua")
 
+util.AddNetworkString("ClientOpenGuide")
 util.AddNetworkString("ClientOpenKeypad")
 util.AddNetworkString("ClientOpenSoundInterface")
 
@@ -61,28 +63,35 @@ function GM:InitPostEntity()
 
 	SetGlobalInt("CurrentGameState", GAMESTATE_PREGAME)
 
-	timer.Simple(0.0, function()
+	--timer.Simple(0.0, function()
 
 		InitMap()
-	end)
+	--end)
 
-	timer.Simple(1.0, function()
+	--[[timer.Simple(1.0, function()
 
 		local DebugInvestigator = player.CreateNextBot("Саня")
 
 		GAMEMODE:PlayerJoinTeam(DebugInvestigator, TEAM_INVESTIGATOR)
 
-		DebugInvestigator:Spawn()
-
 		local DebugGhost = player.CreateNextBot("Дима")
 
 		GAMEMODE:PlayerJoinTeam(DebugGhost, TEAM_GHOST)
 
-		DebugGhost:Spawn()
-	end)
+		local DebugGhost2 = player.CreateNextBot("Дима2")
+
+		GAMEMODE:PlayerJoinTeam(DebugGhost2, TEAM_GHOST)
+
+		local DebugGhost3 = player.CreateNextBot("Дима3")
+
+		GAMEMODE:PlayerJoinTeam(DebugGhost3, TEAM_GHOST)
+	end)--]]
 end
 
 --[[function GM:Tick()
 
 
 end]]
+
+--Больше функций для призраков
+--Более понятные цели маппинга

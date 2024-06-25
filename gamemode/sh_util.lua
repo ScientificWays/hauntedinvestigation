@@ -48,16 +48,16 @@ end
 function GM:CreateTeams()
 
 	TEAM_INVESTIGATOR = 1
-	team.SetUp(TEAM_INVESTIGATOR, "HI_Team.Investigators", Color(120, 255, 120))
+	team.SetUp(TEAM_INVESTIGATOR, "Investigators", Color(120, 255, 120))
 	team.SetSpawnPoint(TEAM_INVESTIGATOR, {"info_investigator_respawn"})
 	team.SetClass(TEAM_INVESTIGATOR, {"player_investigator"})
 
 	TEAM_GHOST = 2
-	team.SetUp(TEAM_GHOST, "HI_Team.Ghosts", Color(0, 255, 255))
+	team.SetUp(TEAM_GHOST, "Ghosts", Color(0, 255, 255))
 	team.SetSpawnPoint(TEAM_GHOST, {"info_investigator_respawn"})
 	team.SetClass(TEAM_GHOST, {"player_ghost"})
 
-	team.SetUp(TEAM_SPECTATOR, "HI_Team.Spectators", Color(255, 255, 255))
+	team.SetUp(TEAM_SPECTATOR, "Spectators", Color(255, 255, 255))
 	team.SetSpawnPoint(TEAM_SPECTATOR, {"worldspawn"})
 end
 
@@ -85,9 +85,10 @@ function GM:ShouldCollide(InEntity1, InEntity2)
 		InEntity1, InEntity2 = InEntity2, InEntity1
 	end--]]
 
-	if InEntity1:GetNWFloat("SpectralValue") > 0.0 and string.StartWith(InEntity2:GetClass(), "prop_") then
+	if InEntity1:GetNWFloat("SpectralValue") > 0.0 then
 
-		return false
+		if string.StartWith(InEntity2:GetClass(), "prop_") or string.EndsWith(InEntity2:GetName(), "_GhostNoCollide") then
+			return false
 	end
 
 	return true

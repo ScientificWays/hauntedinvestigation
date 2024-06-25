@@ -4,7 +4,9 @@ hook.Add("SetupMove", "EnergyMove", function(InPlayer, InMoveData, InCommandData
 
 	if InPlayer:Team() == TEAM_INVESTIGATOR then
 
-		local FinalMaxSpeed = Lerp(math.Clamp(InPlayer:GetNWFloat("EnergyValue") + 0.5, 0.0, 1.0), 100, InMoveData:GetMaxClientSpeed())
+		local FinalMaxSpeed = Lerp(math.Clamp(InPlayer:GetNWFloat("EnergyValue") + 0.5, 0.0, 1.0), 100, InPlayer:GetRunSpeed())
+
+		--MsgN(FinalMaxSpeed)
 
 		InMoveData:SetMaxClientSpeed(FinalMaxSpeed)
 	end
@@ -78,7 +80,7 @@ end
 
 local function HandleGhostSprintingTick(InGhostPlayer)
 
-	local SpectralValueDelta = 1.0 / UtilGetGhostAttackStartDelay()
+	local SpectralValueDelta = 0.25 / UtilGetGhostAttackStartDelay()
 
 	InGhostPlayer:SetNWBool("bAttacking", false)
 
@@ -90,7 +92,7 @@ local function HandleGhostSprintingTick(InGhostPlayer)
 
 			OnGhostTryMaterialize(InGhostPlayer)
 		else
-			local EnergyValueDelta = 1.0 / UtilGetGhostAttackMaxDuration()
+			local EnergyValueDelta = 0.25 / UtilGetGhostAttackMaxDuration()
 
 			UtilAddToFractionalNWFloat(InGhostPlayer, "EnergyValue", -EnergyValueDelta)
 
